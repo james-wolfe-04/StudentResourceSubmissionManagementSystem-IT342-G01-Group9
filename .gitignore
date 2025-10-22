@@ -1,0 +1,35 @@
+# Backend (Spring Boot)
+target/
+*.log
+*.class
+*.jar
+*.war
+*.iml
+/.idea/
+application.properties
+.env
+
+# Web
+node_modules/
+build/
+dist/
+.env.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Mobile
+*.iml
+.gradle
+/local.properties
+/.idea
+/captures
+/.cxx
+/build
+.DS_Store
+
+# General
+*.tmp
+*.swp
+*.bak
+Thumbs.db

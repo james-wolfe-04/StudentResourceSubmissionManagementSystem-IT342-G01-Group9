@@ -1,0 +1,33 @@
+# Student Resource & Submission Management System - Web
+
+## 🧾 Project Title & Short Description
+
+Student Resource & Submission Management System
+The web application is built using ReactJS for both students and teachers to access, manage, and monitor resources, submissions, and classes with a user-friendly dashboard.
+
+## ⚙️ Tech Stack Used
+
+- ReactJS
+- Axios (for API requests)
+- React Router
+- TailwindCSS
+- Google OAuth (via backend API)
+- Firebase Cloud Messaging (for notifications)
+
+## 🚀 Setup & Run Instructions
+
+1. Clone the repository.
+2. Install dependencies:
+   npm install
+3. Start the development server:
+   npm start
+4. The app runs at `http://localhost:3000`.
+
+## 👥 Team Members
+
+- Yu, Rainric Randy P. – Project Manager / Developer – rainric.yu@cit.edu – [@RainricYu](https://github.com/Gideon1274)
+- Veloso, Miguel Ray A. – Developer – miguel.veloso@cit.edu – [@MiguelVeloso](https://github.com/mrav1727)
+- Wolfe, James Ernest T. – Developer – james.wolfe@cit.edu – [@JamesWolfe](https://github.com/james-wolfe-04)
+- Ygot, Dante L. – Developer – dante.ygot@cit.edu – [@DanteYgot](https://github.com/Dantogy)
+
+## 🌐 Deployed Lin

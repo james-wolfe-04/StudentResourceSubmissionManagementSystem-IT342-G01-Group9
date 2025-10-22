@@ -1,0 +1,31 @@
+# Student Resource & Submission Management System - Mobile
+
+## 🧾 Project Title & Short Description
+
+Student Resource & Submission Management System
+An Android application built with Kotlin to allow students and teachers to access classes, submit assignments, and receive push notifications on the go.
+
+## ⚙️ Tech Stack Used
+
+- Kotlin (Android)
+- Retrofit (for API communication)
+- Firebase Cloud Messaging
+- Google OAuth
+- MVVM Architecture
+- Android Jetpack Components
+
+## 🚀 Setup & Run Instructions
+
+1. Clone the repository.
+2. Open the project in Android Studio.
+3. Configure the backend API URL in the Retrofit service file.
+4. Build and run the app on an emulator or Android device.
+
+## 👥 Team Members
+
+- Yu, Rainric Randy P. – Project Manager / Developer – rainric.yu@cit.edu – [@RainricYu](https://github.com/Gideon1274)
+- Veloso, Miguel Ray A. – Developer – miguel.veloso@cit.edu – [@MiguelVeloso](https://github.com/mrav1727)
+- Wolfe, James Ernest T. – Developer – james.wolfe@cit.edu – [@JamesWolfe](https://github.com/james-wolfe-04)
+- Ygot, Dante L. – Developer – dante.ygot@cit.edu – [@DanteYgot](https://github.com/Dantogy)
+
+## 🌐 Deployed Link
