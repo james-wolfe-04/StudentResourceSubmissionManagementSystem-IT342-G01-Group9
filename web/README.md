@@ -25,9 +25,9 @@ The web application is built using ReactJS for both students and teachers to acc
 
 ## 👥 Team Members
 
-- Yu, Rainric Randy P. – Project Manager / Developer – rainric.yu@cit.edu – [@Gideon1274](https://github.com/Gideon1274)
-- Veloso, Miguel Ray A. – Developer – miguel.veloso@cit.edu – [@mrav1727](https://github.com/mrav1727)
-- Wolfe, James Ernest T. – Developer – james.wolfe@cit.edu – [@james-wolfe-04](https://github.com/james-wolfe-04)
+- Yu, Rainric Randy P. – Project Manager / Developer – rainricrandy.yu@cit.edu – [@Gideon1274](https://github.com/Gideon1274)
+- Veloso, Miguel Ray A. – Developer – miguelray.veloso@cit.edu – [@mrav1727](https://github.com/mrav1727)
+- Wolfe, James Ernest T. – Developer – jamesernest.wolfe@cit.edu – [@james-wolfe-04](https://github.com/james-wolfe-04)
 - Ygot, Dante L. – Developer – dante.ygot@cit.edu – [@Dantogy](https://github.com/Dantogy)
 
 ## 🌐 Deployed Lin
