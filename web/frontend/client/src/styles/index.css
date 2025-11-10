@@ -1,0 +1,30 @@
+/* Enhanced global styles with comprehensive design tokens */
+/* ========================================
+   GLOBAL STYLES - FOUNDATION
+   ======================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-family);
+}
+
+code {
+  font-family: "Courier New", monospace;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
