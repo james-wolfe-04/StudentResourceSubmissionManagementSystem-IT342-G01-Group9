@@ -16,8 +16,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
     @Autowired
     private CorsConfigurationSource corsConfigurationSource;
+
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -30,10 +32,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Add this line
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/users/register", "/api/auth/set-password",
-                                "/api/auth/login")
+                        // Permitting all auth endpoints, including /api/auth/set-password
+                        .requestMatchers("/api/auth/**", "/api/users/register")
                         .permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -42,4 +44,5 @@ public class SecurityConfig {
                 .httpBasic(httpBasic -> httpBasic.disable());
         return http.build();
     }
+
 }

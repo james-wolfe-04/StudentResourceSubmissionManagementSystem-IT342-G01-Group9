@@ -13,12 +13,24 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    // Create or save a user
+    // Create or save a user. Preserve role provided by caller; default to "STUDENT"
+    // when not set.
     public User createUser(User user) {
+        if (user == null)
+            return null;
+        if (user.getRole() == null || user.getRole().trim().isEmpty()) {
+            user.setRole("STUDENT");
+        }
         return userRepository.save(user);
     }
 
     public User save(User user) {
+        if (user == null)
+            return null;
+        // preserve role if provided, otherwise default
+        if (user.getRole() == null || user.getRole().trim().isEmpty()) {
+            user.setRole("STUDENT");
+        }
         return userRepository.save(user);
     }
 
