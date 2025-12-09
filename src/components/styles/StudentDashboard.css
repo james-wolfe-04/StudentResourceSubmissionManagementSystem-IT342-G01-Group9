@@ -1,0 +1,151 @@
+/* ========================================
+   IMPROVED MODERN DASHBOARD UI
+   ======================================== */
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--color-gray-50);
+  font-family: var(--font-family);
+}
+
+/* -----------------------
+   TOP NAV
+------------------------- */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 var(--spacing-xl);
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-200);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  margin-right: var(--spacing-sm);
+}
+
+.nav-left h2 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  color: var(--color-gray-800);
+  transition: background-color 180ms ease;
+}
+
+.nav-button:hover {
+  background: var(--color-gray-200);
+}
+
+/* -----------------------
+   LAYOUT (SIDEBAR + BODY)
+------------------------- */
+.main-body {
+  display: flex;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+/* -----------------------
+   SIDEBAR
+------------------------- */
+.sidebar {
+  width: 240px;
+  background: var(--color-white);
+  border-right: 1px solid var(--color-gray-200);
+  padding-top: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.sidebar-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-gray-900);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  transition: background-color 150ms ease, padding-left 150ms ease;
+  position: relative;
+}
+
+.sidebar-button:hover {
+  background-color: var(--color-gray-100);
+  padding-left: calc(var(--spacing-lg) + 4px);
+}
+
+/* active indicator bar */
+.sidebar-button.active {
+  background-color: var(--color-gray-100);
+  padding-left: calc(var(--spacing-lg) + 4px);
+}
+
+.sidebar-button.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 4px;
+  height: 70%;
+  background: var(--color-gray-900);
+  border-radius: var(--radius-full);
+}
+
+.sidebar-button img {
+  width: 22px;
+  height: 22px;
+  opacity: 0.85;
+}
+
+/* -----------------------
+   MAIN CONTENT
+------------------------- */
+.main-content {
+  flex: 1;
+  background: var(--color-gray-50);
+  padding: var(--spacing-4xl) var(--spacing-3xl);
+  overflow-y: auto;
+}
+
+.main-content h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-xl);
+  color: var(--color-gray-900);
+  letter-spacing: -0.5px;
+}

@@ -1,0 +1,48 @@
+.dashboard-container {
+  padding: 30px;
+}
+
+.dash-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.dash-subtitle {
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.dash-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.dash-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  transition: 0.2s;
+  text-align: center;
+}
+
+.dash-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.dash-card h2 {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.deadline-list {
+  padding-left: 15px;
+}
+
+.deadline-list li {
+  margin-bottom: 12px;
+}

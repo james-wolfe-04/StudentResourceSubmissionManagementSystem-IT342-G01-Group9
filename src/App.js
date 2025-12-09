@@ -1,25 +1,170 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
 
-function App() {
+import Login from "./components/Login";
+import SetPassword from "./components/SetPassword";
+import StudentDashboard from "./components/Dashboard";        // Student
+import TeacherDashboard from "./components/TeacherDashboard"; // Teacher
+import AdminDashboard from "./components/AdminDashboard";     // Admin
+
+
+import axios from 'axios';
+
+axios.defaults.baseURL = 'http://localhost:8080';  // Optional, for cleaner URLs
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+function AppWrapper() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <App />
+    </Router>
   );
 }
 
-export default App;
+// Helper: determine correct dashboard path based on user role
+const getDashboardPath = (user) => {
+  if (!user || !user.role) return "/";
+
+  const role = user.role.toUpperCase();
+
+  if (role === "ADMIN") return "/admin-dashboard";
+  if (role === "TEACHER") return "/teacher-dashboard";
+  return "/dashboard"; // Default: Student
+};
+
+function App() {
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [needsPassword, setNeedsPassword] = useState(false);
+  const navigate = useNavigate();
+
+  // Sync localStorage state on mount (basic validation)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token && user) {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLoginSuccess = (userData, mustSetPassword = false) => {
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", userData.token || "");
+
+    setUser(userData);
+    setNeedsPassword(mustSetPassword);
+
+    if (!mustSetPassword) {
+      navigate(getDashboardPath(userData));
+    }
+  };
+
+  const handlePasswordSet = (data) => {
+    const updatedUser = data.user;
+
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    localStorage.setItem("token", data.token);
+
+    setUser(updatedUser);
+    setNeedsPassword(false);
+
+    navigate(getDashboardPath(updatedUser));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setNeedsPassword(false);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
+
+  // Protected route component
+  const ProtectedRoute = ({ children, requiredRole }) => {
+    if (!user) {
+      return <Navigate to="/" replace />;
+    }
+
+    if (needsPassword) {
+      return <Navigate to="/" replace />;
+    }
+
+    const userRole = user.role?.toUpperCase();
+    if (requiredRole && userRole !== requiredRole) {
+      return <Navigate to={getDashboardPath(user)} replace />;
+    }
+
+    return children;
+  };
+
+  return (
+    <Routes>
+      {/* Root route: Login → SetPassword → Dashboard redirect */}
+      <Route
+        path="/"
+        element={
+          !user ? (
+            <Login onLoginSuccess={handleLoginSuccess} />
+          ) : needsPassword ? (
+            <SetPassword
+              email={user.email}
+              onPasswordSet={handlePasswordSet}
+            />
+          ) : (
+            <Navigate to={getDashboardPath(user)} replace />
+          )
+        }
+      />
+
+      {/* Role-based dashboards */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute requiredRole="STUDENT">
+            <StudentDashboard user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/teacher-dashboard"
+        element={
+          <ProtectedRoute requiredRole="TEACHER">
+            <TeacherDashboard user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin-dashboard"
+        element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <AdminDashboard user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch-all fallback */}
+      <Route
+        path="*"
+        element={<Navigate to={user ? getDashboardPath(user) : "/"} replace />}
+      />
+    </Routes>
+  );
+}
+
+export default AppWrapper;

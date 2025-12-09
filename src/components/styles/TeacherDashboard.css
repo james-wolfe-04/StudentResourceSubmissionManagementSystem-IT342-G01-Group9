@@ -1,0 +1,251 @@
+/* ========================================
+   TeacherDashboard.css
+   Custom styles for teacher-specific layouts and components
+   ======================================== */
+
+/* Note: General layout styles (.dashboard-container, .top-nav, .sidebar, .main-content) 
+   are intentionally omitted here, as they should be inherited from StudentDashboard.css */
+
+/* --- Page Header & Action Buttons --- */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.primary-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-gray-900); /* Dark color for primary action */
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    transition: background-color 150ms ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.primary-btn:hover {
+    background-color: var(--color-gray-700);
+}
+
+/* --- Create Class Form (Use Case 3) --- */
+.create-class-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-2xl);
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.create-class-form input,
+.create-class-form textarea {
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-sm);
+    width: 100%;
+    box-sizing: border-box;
+    font-size: var(--font-size-base);
+}
+
+.create-class-form textarea {
+    grid-column: span 2;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.create-class-form .create-btn {
+    grid-column: span 2;
+    background-color: #28a745; /* Green for success/creation */
+    color: white;
+    padding: var(--spacing-sm);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    transition: background-color 150ms ease;
+}
+
+.create-class-form .create-btn:hover {
+    background-color: #1e7e34;
+}
+
+/* --- Class List Grid --- */
+.class-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-xl);
+}
+
+.class-card {
+    background: var(--color-white);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border-left: 6px solid var(--color-gray-900); /* Stronger highlight for teacher classes */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.class-card .class-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    margin-top: 0;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-gray-900);
+}
+
+.class-card .class-meta {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-600);
+    margin-bottom: var(--spacing-md);
+}
+
+.class-card .class-desc {
+    font-size: var(--font-size-base);
+    color: var(--color-gray-700);
+    margin-bottom: var(--spacing-lg);
+}
+
+.class-card .card-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.class-card .card-actions button {
+    padding: 8px 12px;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    transition: background-color 150ms ease;
+}
+
+.class-card .btn-view {
+    background-color: var(--color-gray-900);
+    color: white;
+    border-color: var(--color-gray-900);
+}
+
+.class-card .btn-view:hover {
+    background-color: var(--color-gray-700);
+}
+
+.class-card .btn-delete {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+.class-card .btn-delete:hover {
+    background-color: #c82333;
+}
+
+
+/* --- Class Details Aside (Modal) --- */
+.class-details-modal {
+    position: fixed;
+    top: 64px; /* Below top-nav */
+    right: 0;
+    width: 380px;
+    height: calc(100% - 64px);
+    background: #ffffff;
+    padding: var(--spacing-2xl);
+    box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    z-index: 999;
+    transition: transform 300ms ease-out;
+}
+
+.class-details-modal h4 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    border-bottom: 2px solid var(--color-gray-100);
+    padding-bottom: var(--spacing-xs);
+    margin-top: var(--spacing-2xl);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-gray-800);
+}
+
+.class-details-modal ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.class-details-modal ul li {
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px dashed var(--color-gray-100);
+    font-size: var(--font-size-base);
+    color: var(--color-gray-700);
+}
+
+.class-details-modal ul li:last-child {
+    border-bottom: none;
+}
+
+.post-assignment {
+    padding: var(--spacing-lg);
+    background: var(--color-gray-50);
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-xl);
+}
+
+.post-assignment h5 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-gray-900);
+}
+
+.post-assignment input,
+.post-assignment textarea {
+    width: 100%;
+    margin-bottom: var(--spacing-sm);
+    padding: 8px;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-sm);
+    box-sizing: border-box;
+}
+
+.post-assignment button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff; /* Blue for posting */
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    transition: background-color 150ms ease;
+}
+
+.post-assignment button:hover {
+    background-color: #0056b3;
+}
+
+.close-details-btn {
+    width: 100%;
+    padding: var(--spacing-sm);
+    background-color: var(--color-gray-600);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-xl);
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.close-details-btn:hover {
+    background-color: var(--color-gray-700);
+}
