@@ -4,8 +4,10 @@ import com.sia.srms.model.Assignment;
 import com.sia.srms.model.AssignmentSubmission;
 import com.sia.srms.model.User;
 import com.sia.srms.repository.UserRepository;
+import com.sia.srms.service.ClassService;
 import com.sia.srms.service.AssignmentService;
 import com.sia.srms.service.AssignmentSubmissionService;
+import com.sia.srms.service.NotificationService;
 import com.sia.srms.service.SupabaseStorageService;
 import com.sia.srms.security.JwtUtil;
 
@@ -25,16 +27,22 @@ public class AssignmentController {
     private final AssignmentSubmissionService submissionService;
     private final UserRepository userRepository;
     private final SupabaseStorageService supabaseStorageService;
+    private final NotificationService notificationService;
+    private final ClassService classService;
 
     public AssignmentController(
             AssignmentService assignmentService,
             AssignmentSubmissionService submissionService,
             UserRepository userRepository,
-            SupabaseStorageService supabaseStorageService) {
+            SupabaseStorageService supabaseStorageService,
+            NotificationService notificationService,
+            ClassService classService) {
         this.assignmentService = assignmentService;
         this.submissionService = submissionService;
         this.userRepository = userRepository;
         this.supabaseStorageService = supabaseStorageService;
+        this.notificationService = notificationService;
+        this.classService = classService;
     }
 
     // -------------------------
@@ -42,7 +50,16 @@ public class AssignmentController {
     // -------------------------
     @PostMapping("/create")
     public Assignment createAssignment(@RequestBody Assignment assignment) {
-        return assignmentService.createAssignment(assignment);
+        Assignment created = assignmentService.createAssignment(assignment);
+        // Notify enrolled students for this class
+        Long classId = created.getClassEntity().getId();
+        List<User> students = classService.findById(classId).getStudents();
+        for (User s : students) {
+            notificationService.create(s.getId(), "ASSIGNMENT",
+                    "New assignment: " + created.getTitle(),
+                    classId, created.getId());
+        }
+        return created;
     }
 
     // -------------------------

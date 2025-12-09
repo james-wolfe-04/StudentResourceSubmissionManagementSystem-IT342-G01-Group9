@@ -36,16 +36,36 @@ public class JoinRequestService {
         if (classEntity == null)
             throw new RuntimeException("Class not found");
 
-        // Check if already enrolled
+        // If already enrolled, return a synthetic approved response (id may be null)
         if (classEntity.getStudents().stream().anyMatch(s -> s.getId().equals(studentId))) {
-            throw new RuntimeException("Student already in class");
+            JoinRequest already = new JoinRequest();
+            already.setClassEntity(classEntity);
+            already.setStudent(student);
+            already.setStatus("APPROVED");
+            return already;
         }
 
         // Check if request exists
         JoinRequest existingRequest = joinRequestRepository.findByClassEntityIdAndStudentId(classEntity.getId(),
                 studentId);
         if (existingRequest != null) {
-            throw new RuntimeException("Join request already exists");
+            // Idempotent behaviour: return existing or reset REJECTED to PENDING
+            String status = existingRequest.getStatus();
+            if ("REJECTED".equals(status)) {
+                existingRequest.setStatus("PENDING");
+                return joinRequestRepository.save(existingRequest);
+            }
+
+            if ("APPROVED".equals(status)) {
+                // Ensure enrollment is reflected
+                if (classEntity.getStudents().stream().noneMatch(s -> s.getId().equals(studentId))) {
+                    classService.addStudentToClass(classEntity, student);
+                }
+                return existingRequest;
+            }
+
+            // PENDING or any other status – just return as-is
+            return existingRequest;
         }
 
         JoinRequest request = new JoinRequest();

@@ -53,6 +53,11 @@ public class ClassService {
         return classRepository.findById(id).orElse(null);
     }
 
+    // Find class by its unique code
+    public ClassEntity findByClassCode(String classCode) {
+        return classRepository.findByClassCode(classCode);
+    }
+
     // Get classes by student
     public List<ClassEntity> getClassesByStudent(Long studentId) {
         return classRepository.findAll().stream()
