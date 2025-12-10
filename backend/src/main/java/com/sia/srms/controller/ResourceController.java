@@ -71,9 +71,9 @@ public class ResourceController {
             item.setFileName(original);
             // Save first to get ID
             ResourceItem saved = repo.save(item);
-            // Set URL to download endpoint and resave
+            // Set URL to download endpoint and persist without reassigning 'saved'
             saved.setUrl("/api/resources/" + saved.getId() + "/download");
-            saved = repo.save(saved);
+            repo.save(saved);
 
             List<User> students = classService.findById(classId).getStudents();
             students.forEach(s -> notificationService.create(s.getId(), "RESOURCE",
