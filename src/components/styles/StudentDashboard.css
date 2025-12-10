@@ -45,11 +45,7 @@
   color: var(--color-gray-900);
 }
 
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
+/* nav-right, icon-button, nav-profile, avatar-circle, profile-lines moved to global.css */
 
 .nav-button {
   background: none;
@@ -148,4 +144,39 @@
   margin-bottom: var(--spacing-xl);
   color: var(--color-gray-900);
   letter-spacing: -0.5px;
+}
+
+/* -----------------------
+   CLASSES PAGE LAYOUT
+------------------------- */
+.join-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--spacing-lg);
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.join-form .input {
+  min-width: 360px;
+}
+
+.join-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-self: start;
+  margin-left: 6px;
+  /* nudge actions away from input edge */
+}
+
+.class-list {
+  margin-top: var(--spacing-md);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.note {
+  margin-top: var(--spacing-sm);
+  color: var(--color-gray-600);
 }

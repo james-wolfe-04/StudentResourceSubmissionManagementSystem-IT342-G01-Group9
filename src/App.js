@@ -14,16 +14,7 @@ import TeacherDashboard from "./components/TeacherDashboard"; // Teacher
 import AdminDashboard from "./components/AdminDashboard";     // Admin
 
 
-import axios from 'axios';
-
-axios.defaults.baseURL = 'http://localhost:8080';  // Optional, for cleaner URLs
-axios.interceptors.request.use(config => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// All API calls should use src/api/axios.js; remove conflicting global axios overrides
 
 function AppWrapper() {
   return (
@@ -61,15 +52,19 @@ function App() {
     }
   }, []);
 
-  const handleLoginSuccess = (userData, mustSetPassword = false) => {
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", userData.token || "");
+  const handleLoginSuccess = (authPayload) => {
+    // Expecting { user, token, mustSetPassword? }
+    const { user: nextUser, token, mustSetPassword } = authPayload || {};
+    if (!nextUser || !token) return;
 
-    setUser(userData);
-    setNeedsPassword(mustSetPassword);
+    localStorage.setItem("user", JSON.stringify(nextUser));
+    localStorage.setItem("token", token);
+
+    setUser(nextUser);
+    setNeedsPassword(!!mustSetPassword);
 
     if (!mustSetPassword) {
-      navigate(getDashboardPath(userData));
+      navigate(getDashboardPath(nextUser));
     }
   };
 
@@ -120,10 +115,7 @@ function App() {
           !user ? (
             <Login onLoginSuccess={handleLoginSuccess} />
           ) : needsPassword ? (
-            <SetPassword
-              email={user.email}
-              onPasswordSet={handlePasswordSet}
-            />
+            <SetPassword email={user.email} onPasswordSet={handlePasswordSet} />
           ) : (
             <Navigate to={getDashboardPath(user)} replace />
           )

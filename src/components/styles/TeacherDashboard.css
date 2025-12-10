@@ -16,9 +16,18 @@
     border-bottom: 1px solid var(--color-gray-200);
 }
 
+/* Align with shared section header utility */
+.classes-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
 .primary-btn {
     padding: var(--spacing-sm) var(--spacing-md);
-    background-color: var(--color-gray-900); /* Dark color for primary action */
+    background-color: var(--color-gray-900);
+    /* Dark color for primary action */
     color: var(--color-white);
     border: none;
     border-radius: var(--radius-md);
@@ -63,7 +72,8 @@
 
 .create-class-form .create-btn {
     grid-column: span 2;
-    background-color: #28a745; /* Green for success/creation */
+    background-color: #28a745;
+    /* Green for success/creation */
     color: white;
     padding: var(--spacing-sm);
     border: none;
@@ -84,12 +94,20 @@
     gap: var(--spacing-xl);
 }
 
+/* Match component naming used in TeacherDashboard.js */
+.classes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+}
+
 .class-card {
     background: var(--color-white);
     padding: var(--spacing-xl);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    border-left: 6px solid var(--color-gray-900); /* Stronger highlight for teacher classes */
+    border-left: 6px solid var(--color-gray-900);
+    /* Stronger highlight for teacher classes */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -154,13 +172,17 @@
 /* --- Class Details Aside (Modal) --- */
 .class-details-modal {
     position: fixed;
-    top: 64px; /* Below top-nav */
-    right: 0;
-    width: 380px;
-    height: calc(100% - 64px);
+    top: 80px;
+    /* Below top-nav */
+    right: 16px;
+    left: auto;
+    width: 420px;
+    height: calc(100% - 96px);
     background: #ffffff;
     padding: var(--spacing-2xl);
-    box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
     overflow-y: auto;
     z-index: 999;
     transition: transform 300ms ease-out;
@@ -169,8 +191,8 @@
 .class-details-modal h4 {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
-    border-bottom: 2px solid var(--color-gray-100);
-    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--color-gray-200);
+    padding-bottom: var(--spacing-sm);
     margin-top: var(--spacing-2xl);
     margin-bottom: var(--spacing-md);
     color: var(--color-gray-800);
@@ -221,7 +243,8 @@
 .post-assignment button {
     width: 100%;
     padding: 10px;
-    background-color: #007bff; /* Blue for posting */
+    background-color: #007bff;
+    /* Blue for posting */
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -249,3 +272,6 @@
 .close-details-btn:hover {
     background-color: var(--color-gray-700);
 }
+
+/* --- Top Nav Right: Icons + Profile Chip (parity with Student) --- */
+/* nav-right, icon-button, nav-profile, avatar-circle, profile-lines moved to global.css */

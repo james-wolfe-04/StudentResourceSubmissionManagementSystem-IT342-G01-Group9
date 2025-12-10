@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import "./styles/Submissions.css";
+import Button from "./ui/Button";
+import Input from "./ui/Input";
+import Card from "./ui/Card";
 
 export default function Submissions({ user }) {
   const [assignments, setAssignments] = useState([]);
@@ -53,6 +56,7 @@ export default function Submissions({ user }) {
   // 🔽 Submit assignment
   const handleSubmit = async (assignmentId) => {
     if (!content && !file) {
+      console.warn('[Submit] Missing content or file');
       alert("Add text or file first.");
       return;
     }
@@ -67,7 +71,7 @@ export default function Submissions({ user }) {
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-
+      console.log('[Submit] Submitted assignment', assignmentId, res.data);
       alert("Submitted!");
 
       // Update UI WITHOUT RELOAD
@@ -79,7 +83,8 @@ export default function Submissions({ user }) {
       setContent("");
       setFile(null);
     } catch (err) {
-      console.error(err);
+      const msg = err?.response?.data?.message || err?.message || 'Submit failed';
+      console.error('[Submit] Error:', msg, err);
       alert("Submit failed.");
     }
   };
@@ -94,9 +99,7 @@ export default function Submissions({ user }) {
         const sub = submissions[a.id];
 
         return (
-          <div key={a.id} className="assignment-card">
-            <h3>{a.title}</h3>
-            <p><strong>Class:</strong> {a.className}</p>
+          <Card key={a.id} title={a.title} subtitle={`Class: ${a.className}`}>
             <p><strong>Description:</strong> {a.description || "No description"}</p>
 
             {/* ========================== */}
@@ -134,14 +137,15 @@ export default function Submissions({ user }) {
                   placeholder="Write your answer..."
                   value={content}
                   onChange={e => setContent(e.target.value)}
+                  style={{ width: '100%', minHeight: 100, padding: 10, borderRadius: 8, border: '1px solid #e5e7eb' }}
                 />
 
-                <input type="file" onChange={e => setFile(e.target.files[0])} />
+                <Input type="file" onChange={e => setFile(e.target.files[0])} label="Attach file (optional)" />
 
-                <button onClick={() => handleSubmit(a.id)}>Submit</button>
+                <Button onClick={() => handleSubmit(a.id)} variant="primary">Submit</Button>
               </>
             )}
-          </div>
+          </Card>
         );
       })}
     </div>

@@ -1,66 +1,45 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import api from "../api/axios";
 
-export default function GoogleLogin({ onLoginSuccess, asTeacher = false }) {
+// Renders a Google Sign-In button and exchanges the credential with backend
+export default function GoogleLogin({ asTeacher = false, onLoginSuccess, onError }) {
+  const buttonRef = useRef(null);
+
   useEffect(() => {
-    // keep latest asTeacher on a global so the Google callback can read the latest value
-    window._googleAsTeacher = asTeacher;
-    console.log("GoogleLogin: asTeacher set to", asTeacher);
+    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+    if (!window.google || !clientId) return;
 
-    if (!window || !window.google) {
-      console.error("Google Identity Services script not loaded");
-      return;
-    }
-    // Only initialize the Google SDK once; still update the global flag above when prop changes
-    if (window._googleIdentityInitialized) {
-      return;
-    }
-    window._googleIdentityInitialized = true;
-
-    const handleCredentialResponse = async (response) => {
-      const idToken = response.credential;
-      try {
-        // read current asTeacher value from global (ensures latest checkbox state is used)
-        const asTeacherFlag = Boolean(window._googleAsTeacher);
-        console.log("Google callback: asTeacherFlag =", asTeacherFlag);
-
-        const payload = { idToken, asTeacher: asTeacherFlag };
-        console.log("GoogleLogin -> sending payload:", payload);
-
-        const res = await api.post("/auth/google", payload);
-        console.log("GoogleLogin -> backend response:", res.data);
-
-        const { user, token, mustSetPassword } = res.data;
-
-        // Save token for authenticated requests
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-
-        // Notify parent with mustSetPassword flag
-        if (typeof onLoginSuccess === "function") {
-          onLoginSuccess(user, mustSetPassword);
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: async (resp) => {
+        try {
+          const idToken = resp?.credential;
+          if (!idToken) return;
+          const { data } = await api.post("/auth/google", { idToken, asTeacher });
+          const { user, token, mustSetPassword } = data || {};
+          if (user && token) {
+            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("token", token);
+            onLoginSuccess?.({ user, token, mustSetPassword: !!mustSetPassword });
+          }
+        } catch (err) {
+          const msg = err?.response?.data?.message || "Google login failed";
+          console.error("Google login failed", err);
+          if (typeof onError === "function") onError(msg);
+          else alert(msg);
         }
-      } catch (err) {
-        console.error("Backend error:", err, err?.response?.data);
-      }
-    };
+      },
+    });
 
-    try {
-      window.google.accounts.id.initialize({
-        client_id: "188530738032-8mu3352c2ot2jvvgl7dklqgqgu7siedc.apps.googleusercontent.com",
-        callback: handleCredentialResponse,
+    if (buttonRef.current) {
+      window.google.accounts.id.renderButton(buttonRef.current, {
+        theme: "outline",
+        size: "large",
+        shape: "pill",
+        text: asTeacher ? "continue_with" : undefined,
       });
-
-      const btn = document.getElementById("googleSignInDiv");
-      if (btn) {
-        window.google.accounts.id.renderButton(btn, { theme: "outline", size: "large" });
-      }
-
-      window.google.accounts.id.prompt();
-    } catch (e) {
-      console.error("Google Identity init error:", e);
     }
-  }, [onLoginSuccess, asTeacher]);  // keep dependency so global is updated when asTeacher changes
+  }, [asTeacher]);
 
-  return <div id="googleSignInDiv"></div>;
+  return <div ref={buttonRef} />;
 }
