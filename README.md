@@ -1,28 +1,32 @@
-# StudentResourceSubmissionManagementSystem-IT342-G01-Group9
+# Student Resource Submission Management System-IT342-G01-Group9
 
 ## 🧾 Project Title & Short Description
 
-Student Resource & Submission Management System (SRSMS)  
-A unified platform designed to streamline academic resource sharing and submission tracking between teachers and students via web and mobile apps, powered by a Spring Boot backend and Google OAuth authentication.
+**Student Resource & Submission Management System (SRSMS)**
+
+A lean, unified web platform designed to streamline academic resource sharing and submission tracking between teachers and students. The system is built on a modular Client-Server Architecture, powered by a Spring Boot backend and secured with Google OAuth authentication.
 
 ## ⚙️ Tech Stack Used
 
-- Backend: Spring Boot, MySQL, Google OAuth, Firebase Cloud Messaging
-- Web: ReactJS, TailwindCSS, Axios
-- Mobile: Kotlin (Android), Retrofit, Firebase
-- Version Control: Git & GitHub
+- **Backend (API):** Spring Boot (Java), MySQL, Google OAuth 2.0
+- **Web (Client):** ReactJS, Axios
+- **File Storage:** SupaBase Storage
+- **Version Control:** Git & GitHub
 
 ## 🚀 Setup & Run Instructions
 
 1. Clone the repository:
-   git clone https://github.com/james-wolfe-04/StudentResourceSubmissionManagementSystem-IT342-G01-Group9.git
-2. Follow each subdirectory’s README.md setup guide.
+   ```bash
+   git clone [https://github.com/james-wolfe-04/StudentResourceSubmissionManagementSystem-IT342-G01-Group9.git](https://github.com/james-wolfe-04/StudentResourceSubmissionManagementSystem-IT342-G01-Group9.git)
+Setup Note: This project is a Web-Only solution.
 
-## 👥 Team Members
+Follow the setup guides in the relevant subdirectories for the Spring Boot Backend and ReactJS Web Client.
 
-- Yu, Rainric Randy P. – Project Manager / Developer – rainricrandy.yu@cit.edu – [@Gideon1274](https://github.com/Gideon1274)
-- Veloso, Miguel Ray A. – Developer – miguelray.veloso@cit.edu – [@mrav1727](https://github.com/mrav1727)
-- Wolfe, James Ernest T. – Developer – jamesernest.wolfe@cit.edu – [@james-wolfe-04](https://github.com/james-wolfe-04)
-- Ygot, Dante L. – Developer – dante.ygot@cit.edu – [@Dantogy](https://github.com/Dantogy)
+👥 Team Members
+Yu, Rainric Randy P. – Project Manager / Developer – rainricrandy.yu@cit.edu – @Gideon1274
 
-## 🌐 Deployed Link
+Veloso, Miguel Ray A. – Developer – miguelray.veloso@cit.edu – @mrav1727
+
+Wolfe, James Ernest T. – Developer – jamesernest.wolfe@cit.edu – @james-wolfe-04
+
+Ygot, Dante L. – Developer – dante.ygot@cit.edu – @Dantogy
