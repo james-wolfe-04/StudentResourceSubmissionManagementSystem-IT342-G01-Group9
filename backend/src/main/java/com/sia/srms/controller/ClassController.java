@@ -1,6 +1,7 @@
 package com.sia.srms.controller;
 
 import com.sia.srms.service.ClassService;
+import com.sia.srms.service.ActivityLogService;
 import com.sia.srms.service.JoinRequestService;
 import com.sia.srms.dto.ClassDto;
 import com.sia.srms.model.User;
@@ -18,12 +19,14 @@ public class ClassController {
     private final ClassService classService;
     private final JoinRequestService joinRequestService;
     private final NotificationService notificationService;
+    private final ActivityLogService activityLogService;
 
     public ClassController(ClassService classService, JoinRequestService joinRequestService,
-            NotificationService notificationService) {
+            NotificationService notificationService, ActivityLogService activityLogService) {
         this.classService = classService;
         this.joinRequestService = joinRequestService;
         this.notificationService = notificationService;
+        this.activityLogService = activityLogService;
     }
 
     // Teacher creates class
@@ -72,9 +75,15 @@ public class ClassController {
             throw new RuntimeException("Class not found");
         }
 
-        return joinRequestService.createJoinRequest(
+        JoinRequest req = joinRequestService.createJoinRequest(
                 classEntity.getClassCode(),
                 requestBody.studentId);
+        if (classEntity.getTeacher() != null) {
+            notificationService.create(classEntity.getTeacher().getId(), "JOIN_REQUEST",
+                    "New join request from student ID " + requestBody.studentId,
+                    classEntity.getId(), req != null ? req.getId() : null);
+        }
+        return req;
     }
 
     // Teacher approves/rejects
@@ -116,14 +125,41 @@ public class ClassController {
     // Minimal endpoints to support frontend integrations
     @DeleteMapping("/{classId}/leave")
     public void leaveClass(@PathVariable Long classId, @RequestParam Long studentId) {
-        // Implement actual removal in ClassService if available
-        // No-op for now to avoid 501 responses
+        ClassEntity cls = classService.findById(classId);
+        if (cls == null)
+            return;
+        User student = classService.findUserById(studentId);
+        if (student == null)
+            return;
+        classService.removeStudentFromClass(cls, studentId);
     }
 
     @GetMapping("/{classId}/students")
-    public List<?> getStudents(@PathVariable Long classId) {
-        // Return empty list until service is wired
-        return java.util.Collections.emptyList();
+    public List<User> getStudents(@PathVariable Long classId) {
+        ClassEntity cls = classService.findById(classId);
+        if (cls == null)
+            return java.util.Collections.emptyList();
+        return cls.getStudents();
+    }
+
+    // Delete class (teacher-owned)
+    @DeleteMapping("/{classId}")
+    public void deleteClass(@PathVariable Long classId) {
+        // Capture teacher id before deletion for activity log context
+        Long teacherId = null;
+        try {
+            ClassEntity cls = classService.findById(classId);
+            if (cls != null && cls.getTeacher() != null) {
+                teacherId = cls.getTeacher().getId();
+            }
+        } catch (Exception ignored) {
+        }
+
+        classService.deleteClass(classId);
+        try {
+            activityLogService.log(teacherId, classId, "class:delete", "Class " + classId + " deleted");
+        } catch (Exception ignored) {
+        }
     }
 
     // Teacher lists pending join requests for a class

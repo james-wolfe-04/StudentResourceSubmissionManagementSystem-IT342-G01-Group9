@@ -26,6 +26,11 @@ public class AssignmentSubmissionService {
             throw new RuntimeException("You have already submitted this assignment");
         }
 
+        // Block late submissions strictly
+        if (assignment.getDeadline() != null && LocalDateTime.now().isAfter(assignment.getDeadline())) {
+            throw new RuntimeException("Deadline has passed. Late submissions are not allowed.");
+        }
+
         AssignmentSubmission submission = new AssignmentSubmission();
         submission.setAssignment(assignment);
         submission.setStudent(student);
@@ -33,12 +38,7 @@ public class AssignmentSubmissionService {
         submission.setFileUrl(fileUrl);
         submission.setSubmittedAt(LocalDateTime.now());
 
-        // Determine if submission is on time
-        if (assignment.getDeadline() != null && LocalDateTime.now().isAfter(assignment.getDeadline())) {
-            submission.setScore(0); // late
-        } else {
-            submission.setScore(1); // on-time
-        }
+        submission.setScore(1); // on-time
 
         return submissionRepository.save(submission);
     }
@@ -53,6 +53,31 @@ public class AssignmentSubmissionService {
 
     public AssignmentSubmission getSubmissionByAssignmentAndStudent(Long assignmentId, Long studentId) {
         return submissionRepository.findByAssignmentIdAndStudentId(assignmentId, studentId);
+    }
+
+    public java.util.List<AssignmentSubmission> getSubmissionsByAssignment(Long assignmentId) {
+        return submissionRepository.findByAssignmentId(assignmentId);
+    }
+
+    public AssignmentSubmission gradeSubmission(Long submissionId, Double grade) {
+        AssignmentSubmission sub = getSubmission(submissionId);
+        if (sub == null) {
+            throw new RuntimeException("Submission not found");
+        }
+        sub.setGrade(grade);
+        return submissionRepository.save(sub);
+    }
+
+    public AssignmentSubmission feedbackAndGrade(Long submissionId, String feedback, Double grade) {
+        AssignmentSubmission sub = getSubmission(submissionId);
+        if (sub == null) {
+            throw new RuntimeException("Submission not found");
+        }
+        sub.setGrade(grade);
+        if (feedback != null && !feedback.isBlank()) {
+            sub.setFeedback(feedback);
+        }
+        return submissionRepository.save(sub);
     }
 
 }

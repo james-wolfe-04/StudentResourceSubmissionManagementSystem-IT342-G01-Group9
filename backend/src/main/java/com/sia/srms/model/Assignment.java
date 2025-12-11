@@ -21,6 +21,10 @@ public class Assignment {
     @JoinColumn(name = "class_id")
     private ClassEntity classEntity;
 
+    // Optional attachment for the assignment (e.g., PDF instructions)
+    private String attachmentFileName;
+    private String attachmentUrl;
+
     // Getters and Setters
 
     public Long getId() {
@@ -61,5 +65,21 @@ public class Assignment {
 
     public void setClassEntity(ClassEntity classEntity) {
         this.classEntity = classEntity;
+    }
+
+    public String getAttachmentFileName() {
+        return attachmentFileName;
+    }
+
+    public void setAttachmentFileName(String attachmentFileName) {
+        this.attachmentFileName = attachmentFileName;
+    }
+
+    public String getAttachmentUrl() {
+        return attachmentUrl;
+    }
+
+    public void setAttachmentUrl(String attachmentUrl) {
+        this.attachmentUrl = attachmentUrl;
     }
 }

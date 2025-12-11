@@ -38,7 +38,9 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/auth/**", "/api/users/register",
                                                                 "/h2-console/**",
                                                                 "/api/classes/join", "/api/classes/*/join-request",
-                                                                "/api/notifications/**", "/error")
+                                                                // Allow direct resource downloads from <a href>
+                                                                "/api/resources/*/download",
+                                                                "/error")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .headers(headers -> headers// this is for h2-console

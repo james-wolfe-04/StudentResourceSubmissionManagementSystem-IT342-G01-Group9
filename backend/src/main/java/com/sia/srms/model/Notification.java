@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_notification_user_created", columnList = "userId,createdAt"),
+        @Index(name = "idx_notification_user", columnList = "userId")
+})
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

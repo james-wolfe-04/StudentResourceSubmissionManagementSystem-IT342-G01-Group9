@@ -12,6 +12,8 @@ public class ResourceItem {
     private String title;
     private String url; // optional, for link resources
     private String fileName; // optional, for uploaded file name (demo)
+    @Column(columnDefinition = "TEXT")
+    private String description; // optional description
 
     public Long getId() {
         return id;
@@ -51,5 +53,13 @@ public class ResourceItem {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

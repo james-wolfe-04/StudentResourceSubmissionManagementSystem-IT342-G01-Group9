@@ -30,6 +30,9 @@ public class AssignmentSubmission {
 
     private Double grade;
 
+    @Column(columnDefinition = "TEXT")
+    private String feedback; // teacher feedback
+
     // -------------------------
     // Getters & Setters
     // -------------------------
@@ -95,6 +98,14 @@ public class AssignmentSubmission {
 
     public void setGrade(Double grade) {
         this.grade = grade;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
     }
 
     // -------------------------

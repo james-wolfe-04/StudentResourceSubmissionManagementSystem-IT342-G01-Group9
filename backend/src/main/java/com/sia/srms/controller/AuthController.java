@@ -54,7 +54,7 @@ public class AuthController {
     // GOOGLE LOGIN / AUTO-REGISTER
     // ----------------------------
     @PostMapping("/google")
-    public Map<String, Object> googleLogin(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Map<String, Object>> googleLogin(@RequestBody Map<String, Object> payload) {
         // Robust parsing + logging to ensure asTeacher flag is read correctly on first
         // call
         String idToken = payload.get("idToken") instanceof String ? (String) payload.get("idToken") : null;
@@ -67,11 +67,15 @@ public class AuthController {
         }
         System.out.println("googleLogin called. idToken present? " + (idToken != null) + ", asTeacher=" + asTeacher);
         if (idToken == null) {
-            throw new RuntimeException("Missing idToken");
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "Missing idToken");
+            return ResponseEntity.badRequest().body(error);
         }
         GoogleAuthService.GoogleUser googleUser = googleAuthService.verifyToken(idToken);
         if (googleUser == null) {
-            throw new RuntimeException("Invalid Google token");
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "Invalid Google token (audience mismatch or token expired)");
+            return ResponseEntity.badRequest().body(error);
         }
         User existing = userService.getByEmail(googleUser.getEmail());
         boolean mustSetPassword = false;
@@ -93,7 +97,9 @@ public class AuthController {
             String requestedRole = asTeacher ? "TEACHER" : "STUDENT";
             System.out.println("Existing user role=" + existingRole + ", requestedRole=" + requestedRole);
             if (!existingRole.equals(requestedRole)) {
-                throw new RuntimeException("Email already registered as " + existingRole);
+                Map<String, Object> error = new HashMap<>();
+                error.put("message", "Email already registered as " + existingRole);
+                return ResponseEntity.badRequest().body(error);
             }
         }
         String token = jwtUtil.generateToken(existing);
@@ -101,7 +107,7 @@ public class AuthController {
         response.put("user", existing);
         response.put("token", token);
         response.put("mustSetPassword", mustSetPassword);
-        return response;
+        return ResponseEntity.ok(response);
     }
 
     // ----------------------------

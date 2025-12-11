@@ -2,6 +2,8 @@ package com.sia.srms.service;
 
 import com.sia.srms.model.Assignment;
 import com.sia.srms.repository.AssignmentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +25,24 @@ public class AssignmentService {
         return assignmentRepository.findByClassEntityId(classId);
     }
 
+    public Page<Assignment> getAssignmentsByClassPaged(Long classId, int page, int size) {
+        return assignmentRepository.findByClassEntityId(classId,
+                PageRequest.of(page, Math.max(1, Math.min(size, 100))));
+    }
+
     public Assignment getAssignment(Long id) {
         return assignmentRepository.findById(id).orElse(null);
+    }
+
+    public Assignment updateAssignment(Long id, java.util.function.Consumer<Assignment> updater) {
+        Assignment existing = getAssignment(id);
+        if (existing == null)
+            return null;
+        updater.accept(existing);
+        return assignmentRepository.save(existing);
+    }
+
+    public void deleteAssignment(Long id) {
+        assignmentRepository.deleteById(id);
     }
 }

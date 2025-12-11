@@ -71,8 +71,31 @@ public class ClassService {
 
     // Add student to class
     public ClassEntity addStudentToClass(ClassEntity classEntity, User student) {
-        classEntity.getStudents().add(student);
+        if (student != null) {
+            classEntity.getStudents().add(student);
+        }
         return classRepository.save(classEntity);
+    }
+
+    // Remove student from class
+    public ClassEntity removeStudentFromClass(ClassEntity classEntity, Long studentId) {
+        if (classEntity == null || studentId == null)
+            return classEntity;
+        classEntity.getStudents().removeIf(s -> s.getId().equals(studentId));
+        return classRepository.save(classEntity);
+    }
+
+    // Delete class (Teacher only): remove associations and delete entity
+    public void deleteClass(Long classId) {
+        ClassEntity cls = findById(classId);
+        if (cls == null)
+            return;
+        // Clear students association to avoid constraint issues
+        if (cls.getStudents() != null) {
+            cls.getStudents().clear();
+            classRepository.save(cls);
+        }
+        classRepository.deleteById(classId);
     }
 
     // Utility: generate 6-character unique class code
