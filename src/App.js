@@ -45,12 +45,13 @@ function App() {
   const navigate = useNavigate();
 
   // Sync localStorage state on mount (basic validation)
+  // Fix dependency warning: this effect depends on `user`
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token && user) {
       setUser(null);
     }
-  }, []);
+  }, [user]);
 
   const handleLoginSuccess = (authPayload) => {
     // Expecting { user, token, mustSetPassword? }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/axios";
+import { fetchUserNotifications, markAllReadForUser } from "../api/notifications";
 import "./styles/StudentDashboard.css";
 import classesIcon from "./assets/classes-icon.png";
 import submissionsIcon from "./assets/submissions-icon.png";
@@ -13,6 +14,13 @@ import Card from "./ui/Card";
 import Chip from "./ui/Chip";
 
 export default function Dashboard({ user, onLogout }) {
+  const displayName = (() => {
+    const name = user?.fullName || user?.name;
+    if (name && name.trim().length > 0) return name;
+    const email = user?.email || "";
+    const local = email.split("@")[0] || "User";
+    return local.replace(/\./g, " ").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  })();
   const [activePage, setActivePage] = useState("welcome");
   const [classes, setClasses] = useState([]);
   const [joinCode, setJoinCode] = useState("");
@@ -22,6 +30,8 @@ export default function Dashboard({ user, onLogout }) {
   const [notifCount, setNotifCount] = useState(0);
   const [showNotif, setShowNotif] = useState(false);
   const [notifItems, setNotifItems] = useState([]);
+  const [notifPage, setNotifPage] = useState(0);
+  const notifPageSize = 20;
   const [selectedClass, setSelectedClass] = useState(null);
   const [resourceItems, setResourceItems] = useState([]);
 
@@ -66,15 +76,48 @@ export default function Dashboard({ user, onLogout }) {
     if (!user?.id) return;
     (async () => {
       try {
-        const res = await api.get(`/notifications/user/${user.id}`);
-        const items = res.data || [];
+        const items = await fetchUserNotifications(user.id);
         setNotifItems(items);
         setNotifCount(items.filter(n => !n.readFlag).length);
+        setNotifPage(0);
       } catch (_) {
         setNotifItems([]);
         setNotifCount(0);
       }
     })();
+    // Deep link handler: support #/notifications/{id}
+    const handleHashLink = async () => {
+      const hash = window.location.hash || "";
+      const m = hash.match(/^#\/notifications\/(\d+)$/);
+      if (m) {
+        const id = Number(m[1]);
+        try {
+          const res = await api.get(`/notifications/${id}`);
+          const n = res.data;
+          if (!n) return;
+          // Mark read optimistically
+          try { await api.post(`/notifications/${id}/read`); } catch (_) { }
+          // Navigate based on type
+          if (n.type === 'RESOURCE' && n.relatedClassId) {
+            await onGoClasses();
+            setActivePage('resources');
+            const cls = classes.find(c => c.id === n.relatedClassId);
+            if (cls) {
+              setSelectedClass(cls);
+              await loadResourcesForClass(cls);
+            }
+          } else if ((n.type === 'ASSIGNMENT' || n.type === 'GRADE') && n.relatedClassId) {
+            await onGoClasses();
+            setActivePage('submissions');
+          } else {
+            setActivePage('classes');
+          }
+        } catch (_) {
+          // ignore if not accessible
+        }
+      }
+    };
+    handleHashLink();
   }, [user?.id]);
 
   return (
@@ -88,13 +131,13 @@ export default function Dashboard({ user, onLogout }) {
         <div className="nav-right">
           <button className="icon-button" title="Notifications" aria-label="Open notifications" onClick={async () => {
             try {
-              const res = await api.get(`/notifications/user/${user.id}`);
-              const items = res.data || [];
+              await markAllReadForUser(user.id);
+              const items = (await fetchUserNotifications(user.id)).map(n => ({ ...n, readFlag: true }));
               setNotifItems(items);
-              setNotifCount(items.filter(n => !n.readFlag).length);
-            } catch (_) {
-              setNotifItems([]);
               setNotifCount(0);
+              setNotifPage(0);
+            } catch (_) {
+              // fallback: still open
             }
             setShowNotif(v => !v);
           }} style={{ position: 'relative' }}>
@@ -108,24 +151,15 @@ export default function Dashboard({ user, onLogout }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <button className="btn btn--secondary btn--md" onClick={async () => {
                     try {
-                      const res = await api.get(`/notifications/user/${user.id}`);
+                      const res = await api.get(`/notifications/user/${user.id}`, { params: { page: 0, size: notifPageSize } });
                       const items = res.data || [];
                       setNotifItems(items);
                       setNotifCount(items.filter(n => !n.readFlag).length);
+                      setNotifPage(0);
                     } catch (_) { }
                   }}>Refresh</button>
-                  {notifItems.some(n => !n.readFlag) && (
-                    <button className="btn btn--primary btn--md" onClick={async () => {
-                      try {
-                        const unread = notifItems.filter(n => !n.readFlag);
-                        await Promise.all(unread.map(n => api.post(`/notifications/${n.id}/read`)));
-                        const next = notifItems.map(n => ({ ...n, readFlag: true }));
-                        setNotifItems(next);
-                        setNotifCount(0);
-                      } catch (_) { }
-                    }}>Mark all read</button>
-                  )}
-                  <button className="icon-button" aria-label="Close notifications" onClick={() => setShowNotif(false)}>×</button>
+                  {/* Mark-all button removed: reads occur automatically on open */}
+                  <button className="icon-button" aria-label="Close notifications" onClick={() => setShowNotif(false)} style={{ color: '#111' }}>×</button>
                 </div>
               </div>
               <div style={{ maxHeight: 300, overflowY: 'auto' }}>
@@ -134,7 +168,30 @@ export default function Dashboard({ user, onLogout }) {
                 ) : (
                   <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                     {notifItems.map(n => (
-                      <li key={n.id} style={{ padding: '10px 12px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <li
+                        key={n.id}
+                        style={{ padding: '10px 12px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                        onClick={async () => {
+                          // Mark as read immediately
+                          try { await api.post(`/notifications/${n.id}/read`); } catch (_) { }
+                          setShowNotif(false);
+                          // Navigate precisely to item
+                          if (n.type === 'RESOURCE' && n.relatedClassId) {
+                            await onGoClasses();
+                            setActivePage('resources');
+                            const cls = classes.find(c => c.id === n.relatedClassId);
+                            if (cls) {
+                              setSelectedClass(cls);
+                              await loadResourcesForClass(cls);
+                            }
+                          } else if ((n.type === 'ASSIGNMENT' || n.type === 'GRADE') && n.relatedClassId) {
+                            await onGoClasses();
+                            setActivePage('submissions');
+                          } else {
+                            setActivePage('classes');
+                          }
+                        }}
+                      >
                         <div>
                           <div style={{ fontSize: 12, color: '#888' }}>{new Date(n.createdAt).toLocaleString()}</div>
                           <div><span style={{ fontWeight: 600 }}>{n.type}</span> — {n.message}</div>
@@ -143,28 +200,40 @@ export default function Dashboard({ user, onLogout }) {
                           <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 9999, border: '1px solid #eee', background: n.readFlag ? '#f9fafb' : '#dbeafe', color: n.readFlag ? '#666' : '#1e40af' }}>
                             {n.readFlag ? 'Read' : 'Unread'}
                           </span>
-                          {!n.readFlag && (
-                            <button className="btn btn--secondary btn--md" onClick={async () => {
-                              try {
-                                await api.post(`/notifications/${n.id}/read`);
-                                const next = notifItems.map(x => x.id === n.id ? { ...x, readFlag: true } : x);
-                                setNotifItems(next);
-                                setNotifCount(next.filter(i => !i.readFlag).length);
-                              } catch (_) { }
-                            }}>Mark read</button>
-                          )}
                         </div>
                       </li>
                     ))}
                   </ul>
                 )}
+                <div style={{ padding: 12, display: 'flex', justifyContent: 'space-between' }}>
+                  <button className="btn btn--secondary btn--sm" onClick={async () => {
+                    if (notifPage <= 0) return;
+                    try {
+                      const prevPage = Math.max(0, notifPage - 1);
+                      const res = await api.get(`/notifications/user/${user.id}`, { params: { page: prevPage, size: notifPageSize } });
+                      setNotifItems(res.data || []);
+                      setNotifPage(prevPage);
+                    } catch (_) { }
+                  }} disabled={notifPage <= 0}>Prev</button>
+                  <button className="btn btn--secondary btn--sm" onClick={async () => {
+                    try {
+                      const nextPage = notifPage + 1;
+                      const res = await api.get(`/notifications/user/${user.id}`, { params: { page: nextPage, size: notifPageSize } });
+                      const data = res.data || [];
+                      if (data.length > 0) {
+                        setNotifItems(data);
+                        setNotifPage(nextPage);
+                      }
+                    } catch (_) { }
+                  }}>Next</button>
+                </div>
               </div>
             </div>
           )}
-          <button type="button" className="nav-profile" title={user?.email || "Profile"} aria-label="Open profile" onClick={() => setActivePage("profile")}>
-            <div className="avatar-circle">{(user?.fullName || user?.name || "?").split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase()}</div>
+          <button type="button" className="nav-profile" title={displayName} aria-label="Open profile" onClick={() => setActivePage("profile")}>
+            <div className="avatar-circle">{(displayName || "?").split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase()}</div>
             <div className="profile-lines">
-              <span className="name">{user?.fullName || user?.name || "User"}</span>
+              <span className="name">{displayName}</span>
               <span className="meta">{user?.email || ""}{user?.role ? ` • ${user.role}` : ""}</span>
             </div>
           </button>
@@ -206,13 +275,46 @@ export default function Dashboard({ user, onLogout }) {
           {activePage === "profile" && (
             <div>
               <h2>Profile</h2>
-              <div className="card" style={{ maxWidth: 520 }}>
-                <div className="card-body" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div className="avatar-circle" aria-hidden>{(user?.fullName || "?").split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase()}</div>
+              <div className="card" style={{ maxWidth: 680 }}>
+                <div className="card-body" style={{ display: 'grid', gridTemplateColumns: '72px 1fr auto', gap: 16, alignItems: 'center' }}>
+                  <div className="avatar-circle" aria-hidden style={{ width: 56, height: 56, fontSize: 18 }}>{(displayName || "?").split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase()}</div>
                   <div>
-                    <div style={{ fontWeight: 600 }}>{user?.fullName}</div>
-                    <div style={{ color: '#555', fontSize: 14 }}>{user?.email}{user?.role ? ` • ${user.role}` : ""}</div>
+                    <div style={{ fontWeight: 700, fontSize: 18 }}>{displayName}</div>
+                    <div style={{ color: '#555', fontSize: 14 }}>{user?.email}</div>
+                    <div style={{ marginTop: 6 }}>
+                      <span className="chip chip--success" style={{ marginRight: 8 }}>{user?.role || 'USER'}</span>
+                    </div>
                   </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="btn btn--secondary btn--md" onClick={() => setActivePage('classes')}>Back to Dashboard</button>
+                    <button className="btn btn--primary btn--md" onClick={handleLogout}>Logout</button>
+                  </div>
+                </div>
+              </div>
+              <div className="card" style={{ maxWidth: 680, marginTop: 12 }}>
+                <div className="card-body">
+                  <h3 style={{ marginTop: 0 }}>Account Details</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', rowGap: 10 }}>
+                    <div className="input-label">Name</div><div>{displayName}</div>
+                    <div className="input-label">Email</div><div>{user?.email || '-'}</div>
+                    <div className="input-label">Role</div><div>{user?.role || '-'}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="card" style={{ maxWidth: 680, marginTop: 12 }}>
+                <div className="card-body">
+                  <h3 style={{ marginTop: 0 }}>Your Classes</h3>
+                  {classes && classes.length > 0 ? (
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                      {classes.map(c => (
+                        <li key={c.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}>
+                          <strong>{c.name}</strong> — {c.subject}{c.section ? ` • ${c.section}` : ''} (Code: {c.classCode})
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div style={{ color: '#666' }}>You are not enrolled in any classes yet.</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -258,7 +360,18 @@ export default function Dashboard({ user, onLogout }) {
                             <Card title={r.title} subtitle={r.fileName ? r.fileName : (r.url || '')} actions={
                               <div className="card-actions">
                                 {r.url && (
-                                  <a href={r.url} target="_blank" rel="noreferrer" className="nav-button" style={{ padding: 6 }}>Open</a>
+                                  <>
+                                    <a href={r.url} target="_blank" rel="noreferrer" className="nav-button" style={{ padding: 6 }}>Open</a>
+                                    {(() => {
+                                      const name = (r.fileName || '').toLowerCase();
+                                      const isExcel = name.endsWith('.xls') || name.endsWith('.xlsx');
+                                      if (isExcel) {
+                                        const officeUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(r.url)}`;
+                                        return <a href={officeUrl} target="_blank" rel="noreferrer" className="nav-button" style={{ padding: 6 }}>Open in Office Online</a>;
+                                      }
+                                      return null;
+                                    })()}
+                                  </>
                                 )}
                               </div>
                             }>
@@ -278,6 +391,16 @@ export default function Dashboard({ user, onLogout }) {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                       <span>PDF Document</span>
                                       <a href={r.url} target="_blank" rel="noreferrer" className="nav-button">Open</a>
+                                      <a href={r.url} download className="nav-button">Download</a>
+                                    </div>
+                                  );
+                                }
+                                if ((name.endsWith('.xls') || name.endsWith('.xlsx')) && r.url) {
+                                  const officeUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(r.url)}`;
+                                  return (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                      <span>Excel Document</span>
+                                      <a href={officeUrl} target="_blank" rel="noreferrer" className="nav-button">Open in Office Online</a>
                                       <a href={r.url} download className="nav-button">Download</a>
                                     </div>
                                   );
@@ -365,28 +488,38 @@ export default function Dashboard({ user, onLogout }) {
               {loadingClasses ? (
                 <p>Loading...</p>
               ) : (
-                <ul style={{ marginTop: 12, listStyle: "none", padding: 0 }}>
+                <ul style={{ marginTop: 12, listStyle: "none", padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
                   {classes.map((c) => (
                     <li key={c.id}>
                       <Card
                         title={c.name}
                         subtitle={`${c.subject}${c.section ? ` • ${c.section}` : ''}`}
-                        actions={<Button variant="secondary" onClick={async () => {
-                          try {
-                            setLoadingClasses(true);
-                            // Provide a leave endpoint in backend; temporary params for studentId
-                            await api.delete(`/classes/${c.id}/leave`, { params: { studentId: user.id } });
-                            const res = await api.get(`/classes/student/${user.id}`);
-                            setClasses(res.data || []);
-                          } catch (e) {
-                            alert("Leave class requires backend endpoint.");
-                          } finally {
-                            setLoadingClasses(false);
-                          }
-                        }}>Leave</Button>}
+                        actions={
+                          <div className="card-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <Button variant="secondary" onClick={async () => {
+                              try {
+                                setLoadingClasses(true);
+                                await api.delete(`/classes/${c.id}/leave`, { params: { studentId: user.id } });
+                                await loadStudentClasses();
+                                // Reset selections for resources
+                                setSelectedClass(null);
+                                setResourceItems([]);
+                              } catch (e) {
+                                alert("Leave class requires backend endpoint.");
+                              } finally {
+                                setLoadingClasses(false);
+                              }
+                            }}>Leave</Button>
+                            <Button variant="secondary" onClick={async () => { setActivePage('resources'); setSelectedClass(c); await loadResourcesForClass(c); }}>View Resources</Button>
+                            <Button variant="secondary" onClick={() => setActivePage('submissions')}>View Assignments</Button>
+                          </div>
+                        }
                       >
-                        {joinStatus === 'PENDING' && <Chip color="warning">Pending Approval</Chip>}
-                        {joinStatus === 'APPROVED' && <Chip color="success">Enrolled</Chip>}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <Chip color="info">Code: {c.classCode}</Chip>
+                          {joinStatus === 'PENDING' && <Chip color="warning">Pending Approval</Chip>}
+                          {joinStatus === 'APPROVED' && <Chip color="success">Enrolled</Chip>}
+                        </div>
                       </Card>
                     </li>
                   ))}

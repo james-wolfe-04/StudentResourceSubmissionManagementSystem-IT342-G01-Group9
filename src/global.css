@@ -298,6 +298,13 @@ body {
   /* ensure lucide strokes use current color */
 }
 
+/* Ensure raster icons (PNG/SVG img tags) render consistently */
+.icon-button img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
 /* Ensure lucide icons are always visible */
 .nav-icon {
   width: 18px;
@@ -360,6 +367,7 @@ body {
 .profile-lines .name {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
 }
 
 .profile-lines .meta {
@@ -431,6 +439,33 @@ body {
 
 .toast--error {
   background: var(--color-error);
+}
+
+/* Lightweight skeletons */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-gray-100), var(--color-gray-200), var(--color-gray-100));
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.2s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-text {
+  height: 12px;
+  margin: 6px 0;
+}
+
+.skeleton-rect {
+  height: 80px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (max-width: 768px) {

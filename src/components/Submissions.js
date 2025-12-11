@@ -17,16 +17,12 @@ export default function Submissions({ user }) {
 
     const loadData = async () => {
       try {
-        // 1️⃣ Load classes of the student
-        const classRes = await api.get(`/classes/student/${user.id}`);
-
-        // 2️⃣ Load assignments for each class
-        let allAssignments = [];
-        for (const cls of classRes.data) {
-          const a = await api.get(`/assignments/class/${cls.id}`);
-          allAssignments.push(...a.data.map(x => ({ ...x, className: cls.name })));
-        }
-
+        // Prefer consolidated endpoint to reduce requests
+        const res = await api.get(`/assignments/student/${user.id}`);
+        const allAssignments = (res.data || []).map(x => ({
+          ...x,
+          className: x?.className || 'Class'
+        }));
         setAssignments(allAssignments);
 
         // 3️⃣ Load submissions for logged-in student
@@ -102,6 +98,13 @@ export default function Submissions({ user }) {
           <Card key={a.id} title={a.title} subtitle={`Class: ${a.className}`}>
             <p><strong>Description:</strong> {a.description || "No description"}</p>
 
+            {/* Assignment attachment for download */}
+            {a.attachmentUrl && (
+              <p>
+                <strong>Attachment:</strong> <a href={a.attachmentUrl} target="_blank" rel="noreferrer">{a.attachmentFileName || 'Download'}</a>
+              </p>
+            )}
+
             {/* ========================== */}
             {/* IF ALREADY SUBMITTED       */}
             {/* ========================== */}
@@ -127,9 +130,7 @@ export default function Submissions({ user }) {
                 )}
 
                 <p><strong>Grade:</strong> {sub.grade}</p>
-
-                {/* comment not implemented yet in backend */}
-                <p><strong>Teacher Comment:</strong> {sub.comment || "No comment yet"}</p>
+                <p><strong>Feedback:</strong> {sub.feedback || "No feedback yet"}</p>
               </div>
             ) : (
               <>
